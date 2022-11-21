@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: python-prometheus
+  name: demo-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: python-prometheus
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: python-prometheus
+    spec:
+      containers:
+      - image: acritelli/flask-prometheus-sample
+        name: flask-prometheus-sample
+        ports:
+        - containerPort: 8080
+        resources: {}
+status: {}

@@ -1,0 +1,56 @@
+tosca_definitions_version: cloudify_dsl_1_4
+
+imports:
+  - https://cloudify.co/spec/cloudify/6.4.0/types.yaml
+  - plugin:cloudify-kubernetes-plugin
+
+inputs:
+
+  kubernetes_api_endpoint:
+    type: string
+    display_label: Kubernetes API Endpoint
+    default: { get_environment_capability: kubernetes_cluster_host }
+
+  kubernetes_token:
+    type: string
+    display_label: Kubernetes Service Account Token
+    default: { get_environment_capability: token }
+
+  kubernetes_ca_cert:
+    type: string
+    display_label: Kubernetes CA Certificate
+    default: { get_environment_capability: ssl_ca_cert }
+
+  kubernetes_client_config:
+    display_label: Kubernetes plugin client Configuration
+    hidden: true
+    description: >
+     Configuration for Kubernetes client. Can be left at default values.
+    default:
+      configuration:
+        api_options:
+          host: { get_input: kubernetes_api_endpoint }
+          api_key: { get_input: kubernetes_token }
+          ssl_ca_cert: { get_input: kubernetes_ca_cert }
+          debug: true
+          verify_ssl: true
+
+node_templates:
+
+  python_app:
+    type: cloudify.kubernetes.resources.FileDefinedResource
+    properties:
+      client_config: { get_input: kubernetes_client_config }
+      file:
+        resource_path: manifests/deployment.yaml
+  service:
+    type: cloudify.kubernetes.resources.FileDefinedResource
+    properties:
+      client_config: { get_input: kubernetes_client_config }
+      file:
+        resource_path: manifests/service.yaml
+
+capabilities:
+  app_endpoint:
+    description: Endpoint for accessing the web application
+    value: { get_attribute: [ service, "kubernetes", "manifests/service.yaml#0", "status", "load_balancer", "ingress", 0, "hostname"]}
