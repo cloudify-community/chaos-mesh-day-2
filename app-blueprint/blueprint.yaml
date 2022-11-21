@@ -1,5 +1,7 @@
 tosca_definitions_version: cloudify_dsl_1_4
 
+description: Deploys a simple web application that exposes metrics to Prometheus.
+
 imports:
   - https://cloudify.co/spec/cloudify/6.4.0/types.yaml
   - plugin:cloudify-kubernetes-plugin
@@ -22,7 +24,7 @@ inputs:
     default: { get_environment_capability: ssl_ca_cert }
 
   kubernetes_client_config:
-    display_label: Kubernetes plugin client Configuration
+    display_label: Kubernetes plugin client configuration
     hidden: true
     description: >
      Configuration for Kubernetes client. Can be left at default values.
@@ -43,6 +45,7 @@ node_templates:
       client_config: { get_input: kubernetes_client_config }
       file:
         resource_path: manifests/deployment.yaml
+
   service:
     type: cloudify.kubernetes.resources.FileDefinedResource
     properties:
