@@ -52,6 +52,9 @@ node_templates:
       client_config: { get_input: kubernetes_client_config }
       file:
         resource_path: manifests/service.yaml
+    relationships:
+      - target: python_app
+        type: cloudify.relationships.depends_on
 
 capabilities:
   app_endpoint:
