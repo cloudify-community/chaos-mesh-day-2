@@ -70,8 +70,6 @@ node_templates:
           - name: namespace
             value: chaos-mesh        
         set_values:
-          - name: chaosDaemon.socketPath
-            value: /run/containerd/containerd.sock
           - name: dashboard.service.type
             value: LoadBalancer
     relationships:
