@@ -24,4 +24,3 @@ spec:
         - name: web
           containerPort: 8080
         resources: {}
-status: {}

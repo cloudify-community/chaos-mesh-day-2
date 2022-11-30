@@ -95,8 +95,3 @@ workflows:
       operations_to_execute:
         default:
           - chaos_actions.run_http_chaos
-
-capabilities:
-  app_endpoint:
-    description: Endpoint for accessing the web application
-    value: { get_attribute: [ service, "kubernetes", "manifests/service.yaml#0", "status", "load_balancer", "ingress", 0, "hostname"]}
