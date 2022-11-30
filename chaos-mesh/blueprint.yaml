@@ -68,27 +68,16 @@ node_templates:
         chart: chaos-mesh/chaos-mesh
         flags:
           - name: namespace
-            value: chaos-mesh        
+            value: chaos-mesh
         set_values:
-          - name: dashboard.service.type
-            value: LoadBalancer
+          - name: chaosDaemon.runtime
+            value: containerd
+          - name: chaosDaemon.socketPath
+            value: /run/containerd/containerd.sock
     relationships:
       - target: helm_install
         type: cloudify.helm.relationships.run_on_host
       - target: chaos_mesh_repo
-        type: cloudify.relationships.depends_on
-      - target: namespace
-        type: cloudify.relationships.contained_in
-
-  service:
-    type: cloudify.kubernetes.resources.FileDefinedResource
-    properties:
-      client_config: { get_input: helm_client_config }
-      file:
-        resource_path: manifests/service.yaml
-      use_external_resource: true
-    relationships:
-      - target: chaos_mesh_release
         type: cloudify.relationships.depends_on
       - target: namespace
         type: cloudify.relationships.contained_in
@@ -102,11 +91,7 @@ node_templates:
     relationships:
       - target: namespace
         type: cloudify.relationships.contained_in
-
 capabilities:
-  dashboard_endpoint:
-    description: Endpoint for accessing the Chaos Dashboard
-    value: { concat: [ "http://", { get_attribute: [ service, "kubernetes", "manifests/service.yaml#0", "status", "load_balancer", "ingress", 0, "hostname" ] }, ":2333" ] }
 
   dashboard_rbac_name:
     description: Name for RBAC account for Chaos Dashboard
