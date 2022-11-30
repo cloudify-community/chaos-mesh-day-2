@@ -21,6 +21,7 @@ spec:
       - image: acritelli/flask-prometheus-sample
         name: flask-prometheus-sample
         ports:
-        - containerPort: 8080
+        - name: web
+          containerPort: 8080
         resources: {}
 status: {}

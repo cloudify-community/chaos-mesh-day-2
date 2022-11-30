@@ -1,0 +1,10 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: demo-monitor
+spec:
+  selector:
+    matchLabels:
+      app: python-prometheus
+  endpoints:
+  - port: web

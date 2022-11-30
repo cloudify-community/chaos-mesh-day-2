@@ -10,8 +10,7 @@ spec:
   - port: 80
     protocol: TCP
     targetPort: 8080
+    name: web
   selector:
     app: python-prometheus
   type: LoadBalancer
-status:
-  loadBalancer: {}
