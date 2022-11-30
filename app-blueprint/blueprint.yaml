@@ -5,6 +5,7 @@ description: Deploys a simple web application that exposes metrics to Prometheus
 imports:
   - https://cloudify.co/spec/cloudify/6.4.0/types.yaml
   - plugin:cloudify-kubernetes-plugin
+  - plugin:cloudify-utilities-plugin
 
 inputs:
 
@@ -45,6 +46,15 @@ node_templates:
       client_config: { get_input: kubernetes_client_config }
       file:
         resource_path: manifests/deployment.yaml
+    interfaces:
+      chaos_actions:        
+        run_http_chaos:
+          implementation: scripts/kubectl_apply.sh
+          executor: central_deployment_agent
+          inputs:
+            host: { get_input: kubernetes_api_endpoint }
+            token: { get_input: kubernetes_token }
+            manifest: manifests/chaos.yaml
 
   service:
     type: cloudify.kubernetes.resources.FileDefinedResource
@@ -55,6 +65,36 @@ node_templates:
     relationships:
       - target: python_app
         type: cloudify.relationships.depends_on
+
+  service_monitor:
+    type: cloudify.nodes.Root
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: scripts/kubectl_apply.sh
+          executor: central_deployment_agent
+          inputs: &kubectl_inputs
+            host: { get_input: kubernetes_api_endpoint }
+            token: { get_input: kubernetes_token }
+            manifest: manifests/servicemonitor.yaml
+        delete:
+          implementation: scripts/kubectl_delete.sh
+          executor: central_deployment_agent
+          inputs: *kubectl_inputs
+    relationships:
+      - target: service
+        type: cloudify.relationships.depends_on
+
+workflows:
+  RunHTTPChaos:
+    mapping: cloudify_custom_workflow.cloudify_custom_workflow.tasks.customwf
+    parameters:
+      nodes_to_runon:
+        default:
+          - python_app
+      operations_to_execute:
+        default:
+          - chaos_actions.run_http_chaos
 
 capabilities:
   app_endpoint:
