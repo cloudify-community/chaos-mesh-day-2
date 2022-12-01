@@ -1,0 +1,68 @@
+tosca_definitions_version: cloudify_dsl_1_4
+
+description: Deploys a full environment into AKS, including Chaos Mesh, Prometheus Operator, and a simple Python web app.
+
+imports:
+  - cloudify/types/types.yaml
+
+inputs:
+  prefix:
+    type: string
+    description: Prefix to append to deployed resources
+    display_label: Resource Prefix
+    default: demo
+    constraints:
+      - pattern: '(^ *$)|(^[a-zA-Z][a-zA-Z0-9]+$)'
+
+node_templates:
+
+  prometheus_operator:
+    type: cloudify.nodes.ServiceComponent
+    properties:
+      resource_config:
+        blueprint:
+          id: Prometheus-Operator
+          blueprint_archive: ./archives/prometheus-operator.zip
+          main_file_name: blueprint.yaml
+        deployment:
+          id: { concat: [ { get_input: prefix }, "-prometheus" ] }
+          auto_inc_suffix: true
+          inputs:
+            kubernetes_api_endpoint: { get_environment_capability: kubernetes_cluster_host }
+            kubernetes_token: { get_environment_capability: token }
+            kubernetes_ca_cert: { get_environment_capability: ssl_ca_cert }
+
+  chaos_mesh:
+    type: cloudify.nodes.ServiceComponent
+    properties:
+      resource_config:
+        blueprint:
+          id: Chaos-Mesh
+          blueprint_archive: ./archives/chaos-mesh.zip
+          main_file_name: blueprint.yaml
+        deployment:
+          id: { concat: [ { get_input: prefix }, "-chaos-mesh" ] }
+          auto_inc_suffix: true
+          inputs:
+            kubernetes_api_endpoint: { get_environment_capability: kubernetes_cluster_host }
+            kubernetes_token: { get_environment_capability: token }
+            kubernetes_ca_cert: { get_environment_capability: ssl_ca_cert }
+
+  python_app:
+    type: cloudify.nodes.ServiceComponent
+    properties:
+      resource_config:
+        blueprint:
+          id: Python-Prometheus
+          blueprint_archive: ./archives/app-blueprint.zip
+          main_file_name: blueprint.yaml
+        deployment:
+          id: { concat: [ { get_input: prefix }, "-python-app" ] }
+          auto_inc_suffix: true
+          inputs:
+            kubernetes_api_endpoint: { get_environment_capability: kubernetes_cluster_host }
+            kubernetes_token: { get_environment_capability: token }
+            kubernetes_ca_cert: { get_environment_capability: ssl_ca_cert }
+    relationships:
+      - target: prometheus_operator
+        type: cloudify.relationships.depends_on
