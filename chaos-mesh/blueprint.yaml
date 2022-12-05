@@ -91,6 +91,7 @@ node_templates:
     relationships:
       - target: namespace
         type: cloudify.relationships.contained_in
+
 capabilities:
 
   dashboard_rbac_name:

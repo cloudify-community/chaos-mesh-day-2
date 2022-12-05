@@ -66,3 +66,9 @@ node_templates:
     relationships:
       - target: prometheus_operator
         type: cloudify.relationships.depends_on
+
+capabilities:
+
+  dashboard_rbac_token_secret:
+    description: Secret for RBAC token for Chaos Dashboard
+    value: { get_attribute: [ chaos_mesh, capabilities, dashboard_rbac_token_secret ] }
